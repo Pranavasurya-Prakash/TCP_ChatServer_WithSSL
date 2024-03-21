@@ -1,3 +1,5 @@
+#Import necessary modules like socket, threading, pickle, os, sys, and ssl 
+#for network communication, concurrency, data serialization, file operations, system-specific parameters, and secure connections.
 import socket
 import threading
 import pickle
@@ -5,9 +7,10 @@ import os
 import sys
 import ssl
 
-groups = {}
-fileTransferCondition = threading.Condition()
+groups = {} #Dictionary to store different chat groups
+fileTransferCondition = threading.Condition() #Threading condition for synchronizing file transfers
 
+#Represents a chat group with methods to manage connections, messages, and members
 class Group:
 	def __init__(self,admin,client):
 		self.admin = admin
@@ -35,6 +38,8 @@ class Group:
 			if member != username:
 				self.clients[member].send(bytes(username + ": " + message,"utf-8"))
 
+#Manages chat operations such as view requests, approve requests, disconnect, message sending, file transfer, etc.
+#Uses 'recv' to receive messages and commands, and 'send' to respond back to the client
 def Chat(client, username, groupname):
 	while True:
 		msg = client.recv(1024).decode("utf-8")
@@ -161,6 +166,9 @@ def Chat(client, username, groupname):
 				fileTransferCondition.notify()
 		else:
 			print("UNIDENTIFIED COMMAND:",msg)
+
+#Manages the initial connection setup between client and server, including group and user management
+#Creates new threads for each client's chat management
 def handshake(client):
 	username = client.recv(1024).decode("utf-8")
 	client.send(b"/sendGroupname")
@@ -183,6 +191,7 @@ def handshake(client):
 		client.send(b"/adminReady")
 		print("New Group:",groupname,"| Admin:",username)
 
+#Checks command-line arguments, sets up SSL context, starts the server, and listens for incoming client connections
 def main():
 	if len(sys.argv) != 3:
 		print("USAGE: python server.py <IP> <Port>")
