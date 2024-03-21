@@ -2,7 +2,7 @@ import socket
 import threading
 import pickle
 import sys
-import shutil
+import shutil #Used for copying file content into another file
 import ssl
 
 state = {} #Dictionary to store the client's state
