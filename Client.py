@@ -5,10 +5,11 @@ import sys
 import shutil
 import ssl
 
-state = {}
-destination_file = 'Recieved_file.txt'
+state = {} #Dictionary to store the client's state
+destination_file = 'Recieved_file.txt' #Path for saving received files
 
-#Server oversees/contains the working of the functions
+#Listens to messages from the server and processes them based on 
+#their type, like view requests, approve requests, disconnect, file transfer, etc
 def serverListen(serverSocket):
 	while True:
 		msg = serverSocket.recv(1024).decode("utf-8")
@@ -143,7 +144,7 @@ def copy_file(filename, destination_file):
                     except Exception as e:
                         print(f"An error occurred: {str(e)}")
 
-#User input with all elif branch/operations that can be done
+#Handles user inputs and sends corresponding commands to the server.
 def userInput(serverSocket):
 	while state["alive"]:
 		state["sendMessageLock"].acquire()
@@ -174,6 +175,7 @@ def userInput(serverSocket):
 			state["sendMessageLock"].acquire()
 			serverSocket.send(b"/messageSend")
 
+#Waits for server messages when the client is not active in a chat group
 def waitServerListen(serverSocket):
 	while not state["alive"]:
 		msg = serverSocket.recv(1024).decode("utf-8")
@@ -185,6 +187,7 @@ def waitServerListen(serverSocket):
 			state["joinDisconnect"] = True
 			break
 
+#Handles user inputs when waiting for group acceptance
 def waitUserInput(serverSocket):
 	while not state["alive"]:
 		state["userInput"] = input()
@@ -192,7 +195,7 @@ def waitUserInput(serverSocket):
 			serverSocket.send(b"/waitDisconnect")
 			break
 
-#main function and SSL implementation
+#Manages the setup of SSL, connection to the server, and starts threads for listening and sending messages
 def main():
 	if len(sys.argv) != 3:
 		print("USAGE: python client.py <IP> <Port>")
